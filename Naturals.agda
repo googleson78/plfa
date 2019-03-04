@@ -180,3 +180,194 @@ infixl 7 _*_
 {-# BUILTIN NATPLUS _+_ #-}
 {-# BUILTIN NATTIMES _*_ #-}
 {-# BUILTIN NATMINUS _∸_ #-}
+
+data Bin : Set where
+  nil : Bin
+  c0_ : Bin → Bin
+  c1_ : Bin → Bin
+
+inc : Bin → Bin
+inc nil    = c1 nil
+inc (c0 x) = c1 x
+inc (c1 x) = c0 (inc x)
+
+_ : inc (c1 c1 nil) ≡ c0 c0 c1 nil
+_ =
+  begin
+    inc (c1 c1 nil)
+  ≡⟨⟩
+    c0 (inc (c1 nil))
+  ≡⟨⟩
+    c0 c0 (inc nil)
+  ≡⟨⟩
+    c0 c0 c1 nil
+  ∎
+
+-- 0 → 1
+_ : inc (c0 nil) ≡ c1 nil
+_ =
+  begin
+    inc (c0 nil)
+  ≡⟨⟩
+    c1 nil
+  ∎
+
+-- 1 → 2
+_ : inc (c1 nil) ≡ c0 c1 nil
+_ =
+  begin
+    inc (c1 nil)
+  ≡⟨⟩
+    c0 (inc nil)
+  ≡⟨⟩
+    c0 c1 nil
+  ∎
+
+-- 2 → 3
+_ : inc (c0 c1 nil) ≡ c1 c1 nil
+_ =
+  begin
+    inc (c0 c1 nil)
+  ≡⟨⟩
+    c1 c1 nil
+  ∎
+
+-- 3 → 4
+_ : inc (c1 c1 nil) ≡ c0 c0 c1 nil
+_ =
+  begin
+    inc (c1 c1 nil)
+  ≡⟨⟩
+    c0 (inc (c1 nil))
+  ≡⟨⟩
+    c0 c0 (inc nil)
+  ≡⟨⟩
+    c0 c0 c1 nil
+  ∎
+
+to : ℕ → Bin
+to zero        = c0 nil
+to (succ x)    = inc (to x)
+
+_ : to 0 ≡ c0 nil
+_ =
+  begin
+    to zero
+  ≡⟨⟩
+    c0 nil
+  ∎
+
+_ : to 1 ≡ c1 nil
+_ =
+  begin
+    to (succ zero)
+  ≡⟨⟩
+    c1 nil
+  ∎
+
+_ : to 3 ≡ c1 c1 nil
+_ =
+  begin
+    to (succ 2)
+  ≡⟨⟩
+    inc (to 2)
+  ≡⟨⟩
+    inc (inc (to 1))
+  ≡⟨⟩
+    inc (inc (inc (to zero)))
+  ≡⟨⟩
+    inc (inc (inc (c0 nil)))
+  ≡⟨⟩
+    inc (inc (c1 nil))
+  ≡⟨⟩
+    inc (c0 c1 nil)
+  ≡⟨⟩
+    c1 c1 nil
+  ∎
+
+from : Bin → ℕ
+from nil    = 0
+from (c0 x) = 2 * from x
+from (c1 x) = 1 + 2 * from x
+
+_ : from (c0 nil) ≡ 0
+_ =
+  begin
+    from (c0 nil)
+  ≡⟨⟩
+    2 * (from nil)
+  ≡⟨⟩
+    2 * 0
+  ≡⟨⟩
+    0
+  ∎
+
+_ : from (c1 nil) ≡ 1
+_ =
+  begin
+    from (c1 nil)
+  ≡⟨⟩
+    1 + 2 * from nil
+  ≡⟨⟩
+    1 + 2 * 0
+  ≡⟨⟩
+    1 + 0
+  ≡⟨⟩
+    1
+  ∎
+
+_ : from (c0 c1 nil) ≡ 2
+_ =
+  begin
+    from (c0 c1 nil)
+  ≡⟨⟩
+    2 * from (c1 nil)
+  ≡⟨⟩
+    2 * (1 + 2 * from nil)
+  ≡⟨⟩
+    2 * (1 + 2 * 0)
+  ≡⟨⟩
+    2 * (1 + 0)
+  ≡⟨⟩
+    2 * 1
+  ≡⟨⟩
+    2
+  ∎
+
+_ : from (c1 c1 nil) ≡ 3
+_ =
+  begin
+    from (c1 c1 nil)
+  ≡⟨⟩
+    1 + 2 * from (c1 nil)
+  ≡⟨⟩
+    1 + 2 * (1 + 2 * from nil)
+  ≡⟨⟩
+    1 + 2 * (1 + 2 * 0)
+  ≡⟨⟩
+    1 + 2 * 1
+  ≡⟨⟩
+    1 + 2
+  ≡⟨⟩
+    3
+  ∎
+
+_ : from (c0 c0 c1 nil) ≡ 4
+_ = 
+  begin
+    from (c0 c0 c1 nil)
+  ≡⟨⟩
+    2 * from (c0 c1 nil)
+  ≡⟨⟩
+    2 * 2 * from (c1 nil)
+  ≡⟨⟩
+    2 * 2 * (1 + 2 * from nil)
+  ≡⟨⟩
+    2 * 2 * (1 + 2 * 0)
+  ≡⟨⟩
+    2 * 2 * (1 + 0)
+  ≡⟨⟩
+    2 * 2 * 1
+  ≡⟨⟩
+    4
+  ∎
