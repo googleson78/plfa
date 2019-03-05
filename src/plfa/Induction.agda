@@ -219,3 +219,26 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
   ≡⟨⟩
     suc n * (m * k)
   ∎
+
+∸-leftIdentity : ∀(n : ℕ) → 0 ∸ n ≡ 0
+∸-leftIdentity zero = refl
+∸-leftIdentity (suc _) = refl
+
+∸-+-assoc : ∀(n m k : ℕ) → n ∸ m ∸ k ≡ n ∸ (m + k)
+∸-+-assoc zero m k rewrite ∸-leftIdentity m | ∸-leftIdentity k | ∸-leftIdentity (m + k) = refl
+∸-+-assoc (suc n) zero k =
+  begin
+    suc n ∸ zero ∸ k
+  ≡⟨⟩
+    suc n ∸ k
+  ≡⟨⟩
+    suc n ∸ (zero + k)
+  ∎
+∸-+-assoc (suc n) (suc m) k =
+  begin
+    suc n ∸ suc m ∸ k
+  ≡⟨⟩
+    n ∸ m ∸ k
+  ≡⟨ ∸-+-assoc n m k ⟩
+    n ∸ (m + k)
+  ∎
