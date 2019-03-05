@@ -179,3 +179,22 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 --  ≡⟨ sym (*-rightSuc m n) ⟩
 --    m * suc n
 --  ∎
+
+*-distrib-+ : ∀(n m k : ℕ) → n * (m + k) ≡ n * m + n * k
+*-distrib-+ zero m k = refl
+*-distrib-+ (suc n) m k =
+  begin
+    suc n * (m + k)
+  ≡⟨⟩
+    (m + k) + n * (m + k)
+  ≡⟨ cong ((m + k) +_) (*-distrib-+ n m k) ⟩
+    m + k + (n * m + n * k)
+  ≡⟨ +-assoc m k (n * m + n * k) ⟩
+    m + (k + (n * m + n * k))
+  ≡⟨ cong (m +_) (+-swap k (n * m) (n * k)) ⟩
+    m + (n * m + (k + n * k))
+  ≡⟨ sym (+-assoc m (n * m) (k + n * k)) ⟩
+    (m + n * m) + (k + n * k)
+  ≡⟨⟩
+    suc n * m + suc n * k
+  ∎
