@@ -180,6 +180,16 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 --    m * suc n
 --  ∎
 
+*-rightIdentity : ∀(n : ℕ) → n * 1 ≡ n
+*-rightIdentity n =
+  begin
+    n * 1
+  ≡⟨ *-commut n 1 ⟩
+    1 * n
+  ≡⟨ *-leftIdentity n ⟩
+    n
+  ∎
+
 *-distrib-+ : ∀(n m k : ℕ) → n * (m + k) ≡ n * m + n * k
 *-distrib-+ zero m k = refl
 *-distrib-+ (suc n) m k =
@@ -242,3 +252,77 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
   ≡⟨ ∸-+-assoc n m k ⟩
     n ∸ (m + k)
   ∎
+
+data Bin : Set where
+  nil : Bin
+  c0_ : Bin → Bin
+  c1_ : Bin → Bin
+
+inc : Bin → Bin
+inc nil    = c1 nil
+inc (c0 x) = c1 x
+inc (c1 x) = c0 (inc x)
+
+to : ℕ → Bin
+to zero        = c0 nil
+to (suc x)    = inc (to x)
+
+from : Bin → ℕ
+from nil    = 0
+from (c0 x) = 2 * from x
+from (c1 x) = 1 + 2 * from x
+
+from-homomorphism : ∀(x : Bin) → from (inc x) ≡ suc (from x)
+from-homomorphism nil =
+  begin
+    from (inc nil)
+  ≡⟨⟩
+    from (c1 nil)
+  ≡⟨⟩
+    1
+  ≡⟨⟩
+    suc 0
+  ≡⟨⟩
+    suc (from nil)
+  ∎
+from-homomorphism (c0 x) =
+  begin
+    from (inc (c0 x))
+  ≡⟨⟩
+    from (c1 x)
+  ≡⟨⟩
+    suc (2 * from x)
+  ≡⟨⟩
+    suc (from (c0 x))
+  ∎
+from-homomorphism (c1 x) =
+  begin
+    from (inc (c1 x))
+  ≡⟨⟩
+    from (c0 (inc x))
+  ≡⟨⟩
+    2 * (from (inc x))
+  ≡⟨ cong (2 *_) (from-homomorphism x) ⟩
+    2 * (1 + (from x))
+  ≡⟨ *-distrib-+ 2 1 (from x) ⟩
+    (2 * 1) + 2 * from x
+  ≡⟨ cong (_+ (2 * from x)) (*-rightIdentity 2) ⟩
+    2 + 2 * from x
+  ≡⟨⟩
+    suc 1 + 2 * from x
+  ≡⟨⟩
+    1 + 1 + 2 * from x
+  ≡⟨ +-assoc 1 1 (2 * from x) ⟩
+    1 + (1 + (2 * from x))
+  ≡⟨⟩
+    suc (suc (2 * from x))
+  ≡⟨⟩
+    suc (from (c1 x))
+  ∎
+
+_ : to (from nil) ≡ c0 nil
+_ = refl
+
+fromToIsId : ∀(n : ℕ) → from (to n) ≡ n
+fromToIsId zero = refl
+fromToIsId (suc n) rewrite from-homomorphism (to n) | fromToIsId n = refl
