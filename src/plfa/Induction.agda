@@ -198,3 +198,24 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
   ≡⟨⟩
     suc n * m + suc n * k
   ∎
+
+*-assoc : ∀(n m k : ℕ) → (n * m) * k ≡ n * (m * k)
+*-assoc zero m k    = refl
+*-assoc (suc n) m k =
+  begin
+    (suc n * m) * k
+  ≡⟨⟩
+    (m + n * m) * k
+  ≡⟨ *-commut (m + n * m) k ⟩
+    k * (m + n * m)
+  ≡⟨ *-distrib-+ k m (n * m) ⟩
+    k * m + k * (n * m)
+  ≡⟨ cong (_+ (k * (n * m))) (*-commut k m) ⟩
+    m * k + k * (n * m)
+  ≡⟨ cong ((m * k) +_) (*-commut k (n * m)) ⟩
+    m * k + (n * m) * k
+  ≡⟨ cong ((m * k) +_) (*-assoc n m k) ⟩
+    m * k + n * (m * k)
+  ≡⟨⟩
+    suc n * (m * k)
+  ∎
