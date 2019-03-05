@@ -1,4 +1,4 @@
-module Naturals where
+module plfa.Naturals where
 
 -- Natural numbers.
 data ℕ : Set where
@@ -353,7 +353,7 @@ _ =
   ∎
 
 _ : from (c0 c0 c1 nil) ≡ 4
-_ = 
+_ =
   begin
     from (c0 c0 c1 nil)
   ≡⟨⟩
