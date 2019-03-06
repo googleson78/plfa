@@ -115,3 +115,18 @@ infix 4 _<_
          → p < q
          → n + p < m + q
 +-mono-< n m p q n<m p<q = <-trans (+-leftMono-< p n m n<m) (+-rightMono-< m p q p<q)
+
+≤-implies-< : ∀{n m : ℕ} → suc n ≤ m → n < m
+≤-implies-< {zero} {.(suc _)} (s≤s sn≤m) = z<s
+≤-implies-< {suc n} {.(suc _)} (s≤s sn≤m) = s<s (≤-implies-< sn≤m)
+
+<-implies-≤ : ∀{n m : ℕ} → n < m → suc n ≤ m
+<-implies-≤ {.0} {.(suc _)} z<s = s≤s z≤n
+<-implies-≤ {.(suc _)} {.(suc _)} (s<s n<m) = s≤s (<-implies-≤ n<m)
+
+≤-suc : ∀{n : ℕ} → n ≤ suc n
+≤-suc {zero} = z≤n
+≤-suc {suc n} = s≤s ≤-suc
+
+<-trans' : ∀{n m k : ℕ} → n < m → m < k → n < k
+<-trans' n<m m<k = ≤-implies-< (≤-trans (≤-trans (<-implies-≤ n<m) ≤-suc) (<-implies-≤ m<k))
