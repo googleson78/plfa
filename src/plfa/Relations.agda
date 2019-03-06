@@ -69,3 +69,49 @@ infixl 1 _or_
          → p ≤ q
          → n * p ≤ m * q
 *-mono-≤ n m p q n≤m p≤q = ≤-trans (*-leftMono-≤ p n m n≤m) (*-rightMono-≤ m p q p≤q)
+
+data _<_ : ℕ → ℕ → Set where
+  z<s : ∀{n : ℕ}
+      → zero < suc n
+  s<s : ∀{n m : ℕ}
+      → n < m
+      → suc n < suc m
+
+infix 4 _<_
+
+<-trans : ∀{n m k : ℕ} → n < m → m < k → n < k
+<-trans z<s (s<s m<k) = z<s
+<-trans (s<s n<m) (s<s m<k) = s<s (<-trans n<m m<k)
+
+<-weak-tricho : ∀(n m : ℕ) →  n < m
+                           or n ≡ m
+                           or m < n
+<-weak-tricho zero zero = left (right refl)
+<-weak-tricho zero (suc _) = left (left z<s)
+<-weak-tricho (suc _) zero = right z<s
+<-weak-tricho (suc n) (suc m)
+    with <-weak-tricho n m
+...    | left (left p) = left (left (s<s p))
+...    | left (right p) = left (right (cong suc p))
+...    | right p = right (s<s p)
+
+<-suc : ∀{n : ℕ} → n < suc n
+<-suc {zero} = z<s
+<-suc {suc n} = s<s <-suc
+
+<-suc-mono : ∀{n m : ℕ} → n < m → n < suc m
+<-suc-mono z<s = z<s
+<-suc-mono (s<s n<m) = s<s (<-suc-mono n<m)
+
++-rightMono-< : (n m k : ℕ) → m < k → n + m < n + k
++-rightMono-< zero m k m<k = m<k
++-rightMono-< (suc n) m k m<k = s<s (+-rightMono-< n m k m<k)
+
++-leftMono-< : ∀(n m k : ℕ) → m < k → m + n < k + n
++-leftMono-< n m k m<k rewrite +-comm m n | +-comm k n = +-rightMono-< n m k m<k
+
++-mono-< : ∀(n m p q : ℕ)
+         → n < m
+         → p < q
+         → n + p < m + q
++-mono-< n m p q n<m p<q = <-trans (+-leftMono-< p n m n<m) (+-rightMono-< m p q p<q)
