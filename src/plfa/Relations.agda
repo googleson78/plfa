@@ -130,3 +130,24 @@ infix 4 _<_
 
 <-trans' : ∀{n m k : ℕ} → n < m → m < k → n < k
 <-trans' n<m m<k = ≤-implies-< (≤-trans (≤-trans (<-implies-≤ n<m) ≤-suc) (<-implies-≤ m<k))
+
+data even : ℕ → Set
+data odd : ℕ → Set
+
+data even where
+  zero : even zero
+  suc : ∀{n : ℕ} → odd n → even (suc n)
+
+data odd where
+  suc : ∀{n : ℕ} → even n → odd (suc n)
+
+e+e≡e : ∀{n m : ℕ} → even n → even m → even (n + m)
+o+e≡e : ∀{n m : ℕ} → odd n → even m → odd (n + m)
+
+e+e≡e zero em = em
+e+e≡e (suc on) em = suc (o+e≡e on em)
+
+o+e≡e (suc en) em = suc (e+e≡e en em)
+
+o+o≡e : ∀{n m : ℕ} → odd n → odd m → even (n + m)
+o+o≡e {suc n} {suc m} (suc en) (suc em) rewrite +-suc n m = suc (suc (e+e≡e en em))
