@@ -4,6 +4,8 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
 open import Data.Nat.Properties using (+-comm; +-suc; *-comm)
+import plfa.Induction as Ind
+open Ind using (Bin; nil; c0_; c1_; inc; to; from)
 
 
 data _≤_ : ℕ → ℕ → Set where
@@ -147,3 +149,25 @@ o+e≡e (suc en) em = suc (e+e≡e en em)
 
 o+o≡e : ∀{n m : ℕ} → odd n → odd m → even (n + m)
 o+o≡e {suc n} {suc m} (suc en) (suc em) rewrite +-suc n m = suc (suc (e+e≡e en em))
+
+data One : Bin → Set where
+  nil : One (c1 nil)
+  c0_ : ∀{x : Bin} → One x → One (c0 x)
+  c1_ : ∀{x : Bin} → One x → One (c1 x)
+
+data Can : Bin → Set where
+  zero : Can (c0 nil)
+  leading : ∀{x : Bin} → One x → Can x
+
+inc-one : ∀{x : Bin} → One x → One (inc x)
+inc-one nil = c0_ nil
+inc-one (c0 ox) = c1 ox
+inc-one (c1 ox) = c0 (inc-one ox)
+
+inc-canon : ∀{x : Bin} → Can x → Can (inc x)
+inc-canon zero = leading nil
+inc-canon (leading cx) = leading (inc-one cx)
+
+to-can : ∀(n : ℕ) → Can (to n)
+to-can zero = zero
+to-can (suc n) = inc-canon (to-can n)
