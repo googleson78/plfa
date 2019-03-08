@@ -1,11 +1,11 @@
 module plfa.Relations where
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong)
+open Eq using (_≡_; refl; cong; sym)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
-open import Data.Nat.Properties using (+-comm; +-suc; *-comm)
+open import Data.Nat.Properties using (+-comm; +-suc; *-comm; +-assoc)
 import plfa.Induction as Ind
-open Ind using (Bin; nil; c0_; c1_; inc; to; from)
+open Ind using (Bin; nil; c0_; c1_; inc; to; from; fromToIsId)
 
 
 data _≤_ : ℕ → ℕ → Set where
@@ -171,3 +171,14 @@ inc-canon (leading cx) = leading (inc-one cx)
 to-can : ∀(n : ℕ) → Can (to n)
 to-can zero = zero
 to-can (suc n) = inc-canon (to-can n)
+
+
+-- WTF???
+l : ∀(n : ℕ) → 0 < n → to (2 * n) ≡ c0 (to n)
+l (suc n) z<s rewrite +-comm n (suc (n + 0))
+                    | +-comm (n + 0) n = ?
+
+to-from-id-one : ∀(x : Bin) → One x → to (from x) ≡ x
+to-from-id-one .(c1 nil) nil = refl
+to-from-id-one (c0 x) (c0 ox) = ?
+to-from-id-one (c1 x) (c1 ox) = ?
