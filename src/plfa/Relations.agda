@@ -172,12 +172,6 @@ to-can : ∀(n : ℕ) → Can (to n)
 to-can zero = zero
 to-can (suc n) = inc-canon (to-can n)
 
-
--- WTF???
-l : ∀(n : ℕ) → 0 < n → to (2 * n) ≡ c0 (to n)
-l (suc n) z<s rewrite +-comm n (suc (n + 0))
-                    | +-comm (n + 0) n = ?
-
 _+-bin_ : Bin → Bin → Bin
 nil +-bin y = y
 (c0 x) +-bin nil = c0 x
