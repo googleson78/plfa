@@ -178,7 +178,57 @@ l : ∀(n : ℕ) → 0 < n → to (2 * n) ≡ c0 (to n)
 l (suc n) z<s rewrite +-comm n (suc (n + 0))
                     | +-comm (n + 0) n = ?
 
+_+-bin_ : Bin → Bin → Bin
+nil +-bin y = y
+(c0 x) +-bin nil = c0 x
+(c0 x) +-bin (c0 y) = c0 (x +-bin y)
+(c0 x) +-bin (c1 y) = c1 (x +-bin y)
+(c1 x) +-bin nil = c1 x
+(c1 x) +-bin (c0 y) = c1 (x +-bin y)
+(c1 x) +-bin (c1 y) = c0 (inc (x +-bin y))
+
+infixl 6 _+-bin_
+
++-bin-left-zero : ∀(x : Bin) → Can x → c0 nil +-bin x ≡ x
++-bin-left-zero .(c0 nil) zero = refl
++-bin-left-zero .(c1 nil) (leading nil) = refl
++-bin-left-zero .(c0 _) (leading (c0 ox)) = refl
++-bin-left-zero .(c1 _) (leading (c1 ox)) = refl
+
++-bin-left-inc : ∀(x y : Bin) → inc x +-bin y ≡ inc (x +-bin y)
++-bin-left-inc nil nil = refl
++-bin-left-inc nil (c0 y) = refl
++-bin-left-inc nil (c1 y) = refl
++-bin-left-inc (c0 x) nil = refl
++-bin-left-inc (c0 x) (c0 y) = refl
++-bin-left-inc (c0 x) (c1 y) = refl
++-bin-left-inc (c1 x) nil = refl
++-bin-left-inc (c1 x) (c0 y) rewrite +-bin-left-inc x y = refl
++-bin-left-inc (c1 x) (c1 y) rewrite +-bin-left-inc x y = refl
+
+to-homo : ∀(n m : ℕ) → to (n + m) ≡ to n +-bin to m
+to-homo zero m rewrite +-bin-left-zero (to m) (to-can m) = refl
+to-homo (suc n) m
+  rewrite to-homo n m
+        | sym (+-bin-left-inc (to n) (to m)) = refl
+
+x+-bin-x-is-shift : ∀(x : Bin) → One x → x +-bin x ≡ c0 x
+x+-bin-x-is-shift .(c1 nil) nil = refl
+x+-bin-x-is-shift (c0 x) (c0 ox) rewrite x+-bin-x-is-shift x ox = refl
+x+-bin-x-is-shift (c1 x) (c1 ox) rewrite x+-bin-x-is-shift x ox = refl
+
 to-from-id-one : ∀(x : Bin) → One x → to (from x) ≡ x
 to-from-id-one .(c1 nil) nil = refl
-to-from-id-one (c0 x) (c0 ox) = ?
-to-from-id-one (c1 x) (c1 ox) = ?
+to-from-id-one (c0 x) (c0 ox)
+  rewrite +-comm (from x) 0
+        | to-homo (from x) (from x)
+        | to-from-id-one x ox = x+-bin-x-is-shift x ox
+to-from-id-one (c1 x) (c1 ox)
+  rewrite +-comm (from x) 0
+        | to-homo (from x) (from x)
+        | to-from-id-one x ox
+        | x+-bin-x-is-shift x ox = refl
+
+to-from-id-can : ∀{x : Bin} → Can x → to (from x) ≡ x
+to-from-id-can zero = refl
+to-from-id-can {x} (leading ox) = to-from-id-one x ox
