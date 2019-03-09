@@ -323,6 +323,6 @@ from-homomorphism (c1 x) =
 _ : to (from nil) ≡ c0 nil
 _ = refl
 
-fromToIsId : ∀(n : ℕ) → from (to n) ≡ n
-fromToIsId zero = refl
-fromToIsId (suc n) rewrite from-homomorphism (to n) | fromToIsId n = refl
+fromToIsId : ∀{n : ℕ} → from (to n) ≡ n
+fromToIsId {zero} = refl
+fromToIsId {suc n} rewrite from-homomorphism (to n) | fromToIsId {n} = refl

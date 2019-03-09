@@ -7,6 +7,11 @@ open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Data.Nat.Properties using (+-comm)
 open import Level using (Level)
 
+open import plfa.Induction
+  using (Bin; fromToIsId)
+  renaming (to to binto; from to binfrom)
+
+
 _∘_ : ∀{A B C : Set} → (B → C) → (A → B) → A → C
 g ∘ f = λ x → g (f x)
 
@@ -212,3 +217,14 @@ open _⇔_
     { to = to B⇔C ∘ to A⇔B
     ; from = from A⇔B ∘ from B⇔C
     }
+
+ℕ≼Bin : ℕ ≼ Bin
+ℕ≼Bin =
+  record
+    { to = binto
+    ; from = binfrom
+    ; from∘to = fromToIsId
+    }
+
+-- to and from don't form an isomorphism, because there is no n ∈ ℕ,
+-- such that to n ≡ nil, so it's not possible for to (from nil) ≡ nil to hold
