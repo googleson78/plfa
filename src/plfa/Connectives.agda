@@ -88,3 +88,21 @@ data ⊤ : Set where
   ≃⟨ ×-identity-left ⟩
     A
   ≃-∎
+
+infixr 1 _⊎_
+
+data _⊎_ : Set → Set → Set where
+  inj₁ : ∀{A B : Set} → A → A ⊎ B
+  inj₂ : ∀{A B : Set} → B → A ⊎ B
+
+case-⊎ : ∀{A B C : Set}
+       → (A → C)
+       → (B → C)
+       → A ⊎ B
+       → C
+case-⊎ f _ (inj₁ x) = f x
+case-⊎ _ g (inj₂ y) = g y
+
+η-⊎ : ∀{A B : Set} (w : A ⊎ B) → case-⊎ inj₁ inj₂ w ≡ w
+η-⊎ (inj₁ _) = refl
+η-⊎ (inj₂ _) = refl
