@@ -63,3 +63,28 @@ swap ⟨ x , y ⟩ = ⟨ y , x ⟩
                       }} → refl}
     ; to∘from = λ{ {⟨ x , y ⟩} → refl}
     }
+
+data ⊤ : Set where
+  tt : ⊤
+
+η-⊤ : ∀(w : ⊤) → tt ≡ w
+η-⊤ tt = refl
+
+×-identity-left : ∀{A : Set} → ⊤ × A ≃ A
+×-identity-left =
+  record
+    { to = λ{ ⟨ _ , x ⟩ → x}
+    ; from = λ{ x → ⟨ tt , x ⟩}
+    ; from∘to = λ{ {⟨ tt , x ⟩} → refl}
+    ; to∘from = λ{ {x} → refl}
+    }
+
+×-identity-right : ∀{A : Set} → A × ⊤ ≃ A
+×-identity-right {A} =
+  ≃-begin
+    (A × ⊤)
+  ≃⟨ ×-comm ⟩
+    (⊤ × A)
+  ≃⟨ ×-identity-left ⟩
+    A
+  ≃-∎
