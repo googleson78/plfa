@@ -250,3 +250,10 @@ currying =
 ⊎-weak-× : ∀{A B C : Set} → (A ⊎ B) × C → A ⊎ (B × C)
 ⊎-weak-× ⟨ inj₁ x , z ⟩ = inj₁ x
 ⊎-weak-× ⟨ inj₂ y , z ⟩ = inj₂ ⟨ y , z ⟩
+
+⊎×-implies-×⊎ : ∀{A B C D : Set} → A × B ⊎ C × D → (A ⊎ C) × (B ⊎ D)
+⊎×-implies-×⊎ (inj₁ ⟨ x , y ⟩) = ⟨ inj₁ x , inj₁ y ⟩
+⊎×-implies-×⊎ (inj₂ ⟨ u , v ⟩) = ⟨ inj₂ u , inj₂ v ⟩
+
+-- converse counterexample
+-- p₁ ∧ p₂ ⇔ (p₁ ∨ F) ∧ (F ∨ p₂) does not imply ̷̷(p₁ ∧ F) ∨ (F ∧ p₂)
