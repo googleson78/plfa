@@ -167,3 +167,86 @@ id x = x
   ≃⟨ ⊎-identity-left ⟩
     A
   ≃-∎
+
+infixr 1 _$_
+
+_$_ : ∀{A B : Set} → (A → B) → A → B
+f $ x = f x
+
+η-→ : ∀{A B : Set} → (f : A → B) → (λ (x : A) → f x) ≡ f
+η-→ f = refl
+
+curry : ∀{A B C : Set} → (A × B → C) → A → B → C
+curry f x y = f ⟨ x , y ⟩
+
+uncurry : ∀{A B C : Set} → (A → B → C) → A × B → C
+uncurry f ⟨ x , y ⟩ = f x y
+
+currying : ∀{A B C : Set} → (A → B → C) ≃ (A × B → C)
+currying =
+  record
+    { to = λ{ f ⟨ x , y ⟩ → f x y }
+    ; from = curry
+    ; from∘to = λ {f} → refl
+    ; to∘from = λ {f} → extensionality λ{ ⟨ x , y ⟩ → refl }
+    }
+
+→-distrib-⊎ : ∀{A B C : Set} → (A ⊎ B → C) ≃ (A → C) × (B → C)
+→-distrib-⊎ =
+  record
+    { to = λ f → ⟨ (f ∘ inj₁) , (f ∘ inj₂) ⟩
+    ; from = λ{ ⟨ f , g ⟩ → case-⊎ f g }
+    ; from∘to = λ{ {f} → extensionality
+                          λ{ (inj₁ x) → refl
+                           ; (inj₂ y) → refl
+                           } }
+    ; to∘from = λ{ {⟨ f , g ⟩} → refl }
+    }
+
+→-distrib-× : ∀{A B C : Set} → (A → B × C) ≃ (A → B) × (A → C)
+→-distrib-× =
+  record
+    { to = λ{ f → ⟨ proj₁ ∘ f , proj₂ ∘ f ⟩ }
+    ; from = λ{ ⟨ f , g ⟩ x → ⟨ f x , g x ⟩ }
+    ; from∘to = λ{ {f} → extensionality (η-× ∘ f) }
+    ; to∘from = λ{ {⟨ f , g ⟩} → refl }
+    }
+
+×-distrib-⊎ : ∀{A B C : Set} → A × (B ⊎ C) ≃ A × B ⊎ A × C
+×-distrib-⊎ =
+  record
+    { to = λ{ ⟨ x , inj₁ y ⟩ → inj₁ ⟨ x , y ⟩
+            ; ⟨ x , inj₂ z ⟩ → inj₂ ⟨ x , z ⟩
+            }
+    ; from = λ{ (inj₁ ⟨ x , y ⟩) → ⟨ x , inj₁ y ⟩
+              ; (inj₂ ⟨ x , z ⟩) → ⟨ x , inj₂ z ⟩
+              }
+    ; from∘to = λ{ {⟨ x , inj₁ y ⟩} → refl
+                 ; {⟨ x , inj₂ z ⟩} → refl
+                 }
+    ; to∘from = λ{ {(inj₁ ⟨ x , y ⟩)} → refl
+                 ; {(inj₂ ⟨ x , z ⟩)} → refl
+                 }
+    }
+
+-- not an iso, instead only an embedding
+⊎-distrib-× : ∀{A B C : Set} → A × B ⊎ C ≼ (A ⊎ C) × (B ⊎ C)
+⊎-distrib-× =
+  record
+    { to = λ{ (inj₁ ⟨ x , y ⟩) → ⟨ inj₁ x , inj₁ y ⟩
+            ; (inj₂ z)         → ⟨ inj₂ z , inj₂ z ⟩
+            }
+    ; from = λ{ ⟨ inj₁ x , inj₁ y ⟩ → inj₁ ⟨ x , y ⟩
+              ; ⟨ inj₁ _ , inj₂ z ⟩ → inj₂ z
+              ; ⟨ inj₂ z , inj₁ _ ⟩ → inj₂ z
+              ; ⟨ inj₂ z , inj₂ _ ⟩ → inj₂ z
+              }
+    ; from∘to = λ{ {inj₁ ⟨ x , y ⟩} → refl
+                 ; {inj₂ z} → refl
+                 }
+    }
+
+-- don't know which "corresponding distributive law" this is referring to
+⊎-weak-× : ∀{A B C : Set} → (A ⊎ B) × C → A ⊎ (B × C)
+⊎-weak-× ⟨ inj₁ x , z ⟩ = inj₁ x
+⊎-weak-× ⟨ inj₂ y , z ⟩ = inj₂ ⟨ y , z ⟩
