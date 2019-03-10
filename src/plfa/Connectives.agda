@@ -35,17 +35,17 @@ swap ⟨ x , y ⟩ = ⟨ y , x ⟩
   record
     { to = swap
     ; from = swap
-    ; from∘to = λ { {⟨ x , y ⟩} → refl }
-    ; to∘from = λ { {⟨ x , y ⟩} → refl }
+    ; from∘to = λ{ {⟨ x , y ⟩} → refl }
+    ; to∘from = λ{ {⟨ x , y ⟩} → refl }
     }
 
 ×-assoc : ∀{A B C : Set} → (A × B) × C ≃ A × (B × C)
 ×-assoc =
   record
-    { to = λ {⟨ ⟨ x , y ⟩ , z ⟩ → ⟨ x , ⟨ y , z ⟩ ⟩}
-    ; from = λ {⟨ x , ⟨ y , z ⟩ ⟩ → ⟨ ⟨ x , y ⟩ , z ⟩}
-    ; from∘to = λ { {⟨ ⟨ x , y ⟩ , z ⟩} → refl}
-    ; to∘from = λ { {⟨ x , ⟨ y , z ⟩ ⟩} → refl}
+    { to = λ{⟨ ⟨ x , y ⟩ , z ⟩ → ⟨ x , ⟨ y , z ⟩ ⟩}
+    ; from = λ{⟨ x , ⟨ y , z ⟩ ⟩ → ⟨ ⟨ x , y ⟩ , z ⟩}
+    ; from∘to = λ{ {⟨ ⟨ x , y ⟩ , z ⟩} → refl}
+    ; to∘from = λ{ {⟨ x , ⟨ y , z ⟩ ⟩} → refl}
     }
 
 ⇔≃× : ∀{A B : Set} → A ⇔ B ≃ (A → B) × (B → A)
@@ -106,3 +106,35 @@ case-⊎ _ g (inj₂ y) = g y
 η-⊎ : ∀{A B : Set} (w : A ⊎ B) → case-⊎ inj₁ inj₂ w ≡ w
 η-⊎ (inj₁ _) = refl
 η-⊎ (inj₂ _) = refl
+
+uniq-⊎ : ∀{A B C : Set} (f : A ⊎ B → C) (w : A ⊎ B) → case-⊎ (f ∘ inj₁) (f ∘ inj₂) w ≡ f w
+uniq-⊎ f (inj₁ _) = refl
+uniq-⊎ f (inj₂ _) = refl
+
+⊎-comm : ∀{A B : Set} → A ⊎ B ≃ B ⊎ A
+⊎-comm =
+  record
+    { to = case-⊎ inj₂ inj₁
+    ; from = case-⊎ inj₂ inj₁
+    ; from∘to = λ{ {inj₁ _} → refl
+                 ; {inj₂ _} → refl
+                 }
+    ; to∘from = λ{ {inj₁ _} → refl
+                 ; {inj₂ _} → refl
+                 }
+    }
+
+⊎-assoc : ∀{A B C : Set} → (A ⊎ B) ⊎ C ≃ A ⊎ (B ⊎ C)
+⊎-assoc =
+  record
+    { to = case-⊎ (case-⊎ inj₁ (inj₂ ∘ inj₁)) (inj₂ ∘ inj₂)
+    ; from = case-⊎ (inj₁ ∘ inj₁) (case-⊎ (inj₁ ∘ inj₂) inj₂)
+    ; from∘to = λ{ {inj₁ (inj₁ _)} → refl
+                 ; {inj₁ (inj₂ _)} → refl
+                 ; {inj₂ _} → refl
+                 }
+    ; to∘from = λ{ {inj₁ _} → refl
+                 ; {inj₂ (inj₁ _)} → refl
+                 ; {inj₂ (inj₂ _)} → refl
+                 }
+    }
