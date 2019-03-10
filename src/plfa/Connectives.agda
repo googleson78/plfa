@@ -138,3 +138,32 @@ uniq-⊎ f (inj₂ _) = refl
                  ; {inj₂ (inj₂ _)} → refl
                  }
     }
+
+data ⊥ : Set where
+
+efq : ∀{A : Set} → ⊥ → A
+efq ()
+
+id : ∀{A : Set} → A → A
+id x = x
+
+⊎-identity-left : ∀{A : Set} → ⊥ ⊎ A ≃ A
+⊎-identity-left =
+  record
+    { to = case-⊎ efq id
+    ; from = inj₂
+    ; from∘to = λ{ {inj₁ ()}
+                 ; {inj₂ y} → refl
+                 }
+    ; to∘from = λ {_} → refl
+    }
+
+⊎-identity-right : ∀{A : Set} → A ⊎ ⊥ ≃ A
+⊎-identity-right {A} =
+  ≃-begin
+    (A ⊎ ⊥)
+  ≃⟨ ⊎-comm ⟩
+    (⊥ ⊎ A)
+  ≃⟨ ⊎-identity-left ⟩
+    A
+  ≃-∎
