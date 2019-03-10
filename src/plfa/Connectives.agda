@@ -256,4 +256,4 @@ currying =
 ⊎×-implies-×⊎ (inj₂ ⟨ u , v ⟩) = ⟨ inj₂ u , inj₂ v ⟩
 
 -- converse counterexample
--- p₁ ∧ p₂ ⇔ (p₁ ∨ F) ∧ (F ∨ p₂) does not imply ̷̷(p₁ ∧ F) ∨ (F ∧ p₂)
+-- p₁ ∧ p₂ ⇔ (p₁ ∨ F) ∧ (F ∨ p₂) does not imply (p₁ ∧ F) ∨ (F ∧ p₂)
