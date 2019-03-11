@@ -8,3 +8,4 @@ Some things are named differently due to either preference or what unicode I hav
 
 * `_≲_` from `plfa.Isomorphism` is `_≼_` instead (easier to type, already accessible from `agda-vim` )
 * `⊥-elim` from `plfa.Connectives` is `efq` because it's semantically more meaningful
+* `em` from `plfa.Negation` is `lem` because I'm used to that name more
