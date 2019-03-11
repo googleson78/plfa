@@ -80,3 +80,25 @@ assimilation ¬x _ = extensionality (λ x → ⊥-elim (¬x x))
 ⊎¬-implies-¬× : ∀{A B : Set} → (¬ A) ⊎ (¬ B) → ¬ (A × B)
 ⊎¬-implies-¬× (inj₁ ¬x) ⟨ x , _ ⟩ = ¬x x
 ⊎¬-implies-¬× (inj₂ ¬y) ⟨ _ , y ⟩ = ¬y y
+
+lem-irrefutable : ∀{A : Set} → ¬ ¬ (A ⊎ ¬ A)
+lem-irrefutable f = f (inj₂ λ x → f (inj₁ x))
+
+lem-implies-stab : (∀{A : Set} → (A ⊎ ¬ A)) → ∀{A : Set} → (¬ ¬ A) → A
+lem-implies-stab lem {A} ¬¬x
+  with lem {A}
+...  | (inj₁ x)  = x
+...  | (inj₂ ¬x) = ⊥-elim (¬¬x ¬x)
+
+-- wtf
+stab-implies-peirce : (∀{A : Set} → (¬ ¬ A) → A) → ∀{A B : Set} → ((A → B) → A) → A
+stab-implies-peirce stab f = stab (λ ¬A → ¬A (f λ A → ⊥-elim (¬A A)))
+
+peirce-implies-→-as-⊎ : (∀{A B : Set} → ((A → B) → A) → A) → ∀{A B : Set} → (A → B) → ¬ A ⊎ B
+peirce-implies-→-as-⊎ peirce A→B = peirce λ x → inj₁ λ A → x (inj₂ (A→B A))
+
+→-as-⊎-implies-de-morgan : (∀{A B : Set} → (A → B) → ¬ A ⊎ B) → ∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B
+→-as-⊎-implies-de-morgan →-as-⊎ ¬¬A×¬B = {!!}
+
+de-morgan-implies-lem : (∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B) → ∀{A : Set} → A ⊎ ¬ A
+de-morgan-implies-lem de-morgan = de-morgan λ{ ⟨ ¬A , ¬¬A ⟩ → ¬¬A ¬A }
