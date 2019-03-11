@@ -58,3 +58,25 @@ assimilation ¬x _ = extensionality (λ x → ⊥-elim (¬x x))
 ...    | inj₁ ⟨ n<m , ⟨ ¬n≡m , ¬m<n ⟩ ⟩ = inj₁ ⟨ s<s n<m , ⟨ (λ{ refl → ¬n≡m refl }) , <-s<s-preserves-¬ ¬m<n ⟩ ⟩
 ...    | inj₂ (inj₁ ⟨ ¬n<m , ⟨ refl , ¬m<n ⟩ ⟩) = inj₂ (inj₁ ⟨ <-irreflexive , ⟨ refl , <-irreflexive ⟩ ⟩)
 ...    | inj₂ (inj₂ ⟨ ¬n<m , ⟨ ¬n≡m , m<n ⟩ ⟩) = inj₂ (inj₂ ⟨ <-s<s-preserves-¬ ¬n<m , ⟨ (λ{ refl → ¬n≡m refl }) , s<s m<n ⟩ ⟩)
+
+→-distrib-⊎ : ∀{A B C : Set} → ((A ⊎ B) → C) ≃ (A → C) × (B → C)
+→-distrib-⊎ =
+  record
+    { to = λ f → ⟨ (λ x → f (inj₁ x)) , (λ y → f (inj₂ y)) ⟩
+    ; from = λ{ f (inj₁ x) → proj₁ f x
+              ; f (inj₂ y) → proj₂ f y
+              }
+    ; from∘to = extensionality λ{ (inj₁ x) → refl
+                                ; (inj₂ y) → refl
+                                }
+    ; to∘from = refl
+    }
+
+-- this is true in general, not just for ⊥ as witnessed above
+⊎-dual-× : ∀{A B : Set} → ¬ (A ⊎ B) ≃ (¬ A) × (¬ B)
+⊎-dual-× {A} {B} = →-distrib-⊎ {A} {B} {⊥}
+
+-- we need stabbing for the other direction
+⊎¬-implies-¬× : ∀{A B : Set} → (¬ A) ⊎ (¬ B) → ¬ (A × B)
+⊎¬-implies-¬× (inj₁ ¬x) ⟨ x , _ ⟩ = ¬x x
+⊎¬-implies-¬× (inj₂ ¬y) ⟨ _ , y ⟩ = ¬y y
