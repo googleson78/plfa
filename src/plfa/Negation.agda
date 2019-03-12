@@ -97,8 +97,22 @@ stab-implies-peirce stab f = stab (λ ¬A → ¬A (f λ A → ⊥-elim (¬A A)))
 peirce-implies-→-as-⊎ : (∀{A B : Set} → ((A → B) → A) → A) → ∀{A B : Set} → (A → B) → ¬ A ⊎ B
 peirce-implies-→-as-⊎ peirce A→B = peirce λ x → inj₁ λ A → x (inj₂ (A→B A))
 
-→-as-⊎-implies-de-morgan : (∀{A B : Set} → (A → B) → ¬ A ⊎ B) → ∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B
-→-as-⊎-implies-de-morgan →-as-⊎ ¬¬A×¬B = {!!}
+⊎-elim : ∀{A B C : Set} → (A → C) → (B → C) → A ⊎ B → C
+⊎-elim f _ (inj₁ x) = f x
+⊎-elim _ g (inj₂ y) = g y
+
+→-as-⊎-implies-lem : (∀{A B : Set} → (A → B) → (¬ A) ⊎ B) → ∀{A : Set} → A ⊎ ¬ A
+→-as-⊎-implies-lem →-as-⊎ = ⊎-elim inj₂ inj₁ (→-as-⊎ id)
+
+stab-implies-de-morgan : (∀{A : Set} → ¬ ¬ A → A) → ∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B
+stab-implies-de-morgan stab ¬¬A×¬B = stab (λ z → ¬¬A×¬B ⟨ (λ x → z (inj₁ x)) , (λ x → z (inj₂ x)) ⟩)
+
+-- -,-
+→-as-⊎-implies-de-morgan : (∀{A B : Set} → (A → B) → (¬ A) ⊎ B) → ∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B
+→-as-⊎-implies-de-morgan = stab-implies-de-morgan ∘ lem-implies-stab ∘ →-as-⊎-implies-lem
+
+de-morgan-implies-→-as-⊎ : (∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B) → ∀{A B : Set} → (A → B) → (¬ A) ⊎ B
+de-morgan-implies-→-as-⊎ de-morgan f = de-morgan (λ z → proj₁ z (λ x → proj₂ z (f x)))
 
 de-morgan-implies-lem : (∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B) → ∀{A : Set} → A ⊎ ¬ A
 de-morgan-implies-lem de-morgan = de-morgan λ{ ⟨ ¬A , ¬¬A ⟩ → ¬¬A ¬A }
