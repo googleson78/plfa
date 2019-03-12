@@ -102,10 +102,14 @@ peirce-implies-→-as-⊎ peirce A→B = peirce λ x → inj₁ λ A → x (inj�
 ⊎-elim _ g (inj₂ y) = g y
 
 →-as-⊎-implies-lem : (∀{A B : Set} → (A → B) → (¬ A) ⊎ B) → ∀{A : Set} → A ⊎ ¬ A
-→-as-⊎-implies-lem →-as-⊎ = ⊎-elim inj₂ inj₁ (→-as-⊎ id)
+→-as-⊎-implies-lem →-as-⊎
+  with (→-as-⊎ id)
+...  | inj₁ ¬x = inj₂ ¬x
+...  | inj₂ x = inj₁ x
 
 stab-implies-de-morgan : (∀{A : Set} → ¬ ¬ A → A) → ∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B
-stab-implies-de-morgan stab ¬¬A×¬B = stab (λ z → ¬¬A×¬B ⟨ (λ x → z (inj₁ x)) , (λ x → z (inj₂ x)) ⟩)
+stab-implies-de-morgan stab ¬¬A×¬B
+  = stab λ ¬A⊎B → ¬¬A×¬B ⟨ (λ A → ¬A⊎B (inj₁ A)) , (λ B → ¬A⊎B (inj₂ B)) ⟩
 
 -- -,-
 →-as-⊎-implies-de-morgan : (∀{A B : Set} → (A → B) → (¬ A) ⊎ B) → ∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B
