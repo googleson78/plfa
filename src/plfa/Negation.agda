@@ -120,3 +120,15 @@ de-morgan-implies-→-as-⊎ de-morgan f = de-morgan (λ z → proj₁ z (λ x �
 
 de-morgan-implies-lem : (∀{A B : Set} → ¬ (¬ A × ¬ B) → A ⊎ B) → ∀{A : Set} → A ⊎ ¬ A
 de-morgan-implies-lem de-morgan = de-morgan λ{ ⟨ ¬A , ¬¬A ⟩ → ¬¬A ¬A }
+
+Stable : Set → Set
+Stable A = ¬ ¬ A → A
+
+¬-stable : ∀{A : Set} → Stable (¬ A)
+¬-stable ¬¬A A = ¬¬A (¬¬-intro A)
+
+×-stability : ∀{A B : Set} → Stable A → Stable B → Stable (A × B)
+×-stability stabA stabB ¬¬A×B
+  = ⟨ stabA (λ ¬A → ¬¬A×B λ{ ⟨ A , _ ⟩ → ¬A A})
+    , stabB (λ ¬B → ¬¬A×B λ{ ⟨ _ , B ⟩ → ¬B B})
+    ⟩
