@@ -132,3 +132,14 @@ Stable A = ¬ ¬ A → A
   = ⟨ stabA (λ ¬A → ¬¬A×B λ{ ⟨ A , _ ⟩ → ¬A A})
     , stabB (λ ¬B → ¬¬A×B λ{ ⟨ _ , B ⟩ → ¬B B})
     ⟩
+
+¬A×¬B-iso-¬A⊎B : ∀{A B : Set} → ¬ A × ¬ B ≃ ¬ (A ⊎ B)
+¬A×¬B-iso-¬A⊎B =
+  record { to = λ{ ⟨ ¬A , ¬B ⟩ (inj₁ A) → ¬A A
+                 ; ⟨ ¬A , ¬B ⟩ (inj₂ B) → ¬B B
+                 }
+         ; from = λ ¬A⊎B → ⟨ (λ A → ¬A⊎B (inj₁ A)) , (λ B → ¬A⊎B (inj₂ B)) ⟩
+         ; from∘to = refl
+         ; to∘from = extensionality λ{ (inj₁ _) → refl
+                                     ; (inj₂ _) → refl}
+                                     }
