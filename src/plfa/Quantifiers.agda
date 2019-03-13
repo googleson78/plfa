@@ -11,6 +11,8 @@ open import Data.Product using (_×_; proj₁; proj₂) renaming (_,_ to ⟨_,_�
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import plfa.Isomorphism using (_≃_; ≃-sym; ≃-trans; _≼_; extensionality)
 
+open import plfa.Negation using (⊎-elim)
+
 ∀-elim : ∀{A : Set} {B : A → Set}
        → (L : ∀(x : A) → B x)
        → (M : A)
@@ -26,3 +28,63 @@ open import plfa.Isomorphism using (_≃_; ≃-sym; ≃-trans; _≼_; extensiona
          ; from∘to = refl
          ; to∘from = refl
          }
+
+⊎∀-implies-∀⊎ : ∀{A : Set} {B C : A → Set}
+              → (∀(x : A) → B x) ⊎ (∀(x : A) → C x)
+              → ∀(x : A) → B x ⊎ C x
+⊎∀-implies-∀⊎ (inj₁ ∀xBx) x = inj₁ (∀xBx x)
+⊎∀-implies-∀⊎ (inj₂ ∀xCx) x = inj₂ (∀xCx x)
+
+data Σ (A : Set) (B : A → Set) : Set where
+  ⟨_,_⟩ : (x : A) → B x → Σ A B
+
+Σ-syntax = Σ
+infix 2 Σ-syntax
+syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
+
+∃ : ∀{A : Set} (B : A → Set) → Set
+∃ {A} B = Σ A B
+
+∃-syntax = ∃
+syntax ∃-syntax (λ x → B) = ∃[ x ] B
+
+∃-elim : ∀{A C : Set} {B : A → Set}
+       → (∀(x : A) → B x → C)
+       → ∃[ x ] B x
+       → C
+∃-elim f ⟨ x , Bx ⟩ = f x Bx
+
+∀∃-currying : ∀{A C : Set} {B : A → Set}
+            → (∀(x : A) → B x → C) ≃ (∃[ x ] B x → C)
+∀∃-currying =
+  record { to = ∃-elim
+         ; from = λ f x Bx → f ⟨ x , Bx ⟩
+         ; from∘to = refl
+         ; to∘from = extensionality λ{ ⟨ x , Bx ⟩ → refl}
+         }
+
+∃-distrib-⊎ : ∀{A : Set} {B C : A → Set}
+            → ∃[ x ] (B x ⊎ C x) ≃ ∃[ x ] B x ⊎ ∃[ x ] C x
+∃-distrib-⊎ =
+  record { to = λ{ ⟨ x , inj₁ Bx ⟩ → inj₁ ⟨ x , Bx ⟩
+                 ; ⟨ x , inj₂ Cx ⟩ → inj₂ ⟨ x , Cx ⟩
+                 }
+         ; from = λ{ (inj₁ ⟨ x , Bx ⟩) → ⟨ x , inj₁ Bx ⟩
+                   ; (inj₂ ⟨ x , Cx ⟩) → ⟨ x , inj₂ Cx ⟩
+                   }
+         ; from∘to = λ{ {⟨ x , inj₁ Bx ⟩} → refl
+                      ; {⟨ x , inj₂ Cx ⟩} → refl
+                      }
+         ; to∘from = λ{ {inj₁ ⟨ x , Bx ⟩} → refl
+                      ; {inj₂ ⟨ x , Cx ⟩} → refl
+                      }
+         }
+
+∃×-implies-×∃ : ∀{A : Set} {B C : A → Set}
+              → ∃[ x ] (B x × C x)
+              → ∃[ x ] B x × ∃[ x ] C x
+∃×-implies-×∃ ⟨ x , ⟨ Bx , Cx ⟩ ⟩ = ⟨ ⟨ x , Bx ⟩ , ⟨ x , Cx ⟩ ⟩
+
+-- the converse is not true in general;
+-- you have no way of knowing whether the x for which B x
+-- is the same x for which C x
