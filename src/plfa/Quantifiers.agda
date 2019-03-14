@@ -134,3 +134,17 @@ odd-∃' (odd-suc ex)
 ∃-+-≤ (suc n) (suc m) (s≤s n≤m)
   with ∃-+-≤ n m n≤m
 ...  | ⟨ k , refl ⟩ = ⟨ k , +-suc k n ⟩
+
+¬∃≅∀¬ : ∀{A : Set} {B : A → Set}
+      → ¬ ∃[ x ] B x ≃ (∀(x : A) → ¬ B x)
+¬∃≅∀¬ =
+  record { to = λ{ ¬∃B x Bx → ¬∃B ⟨ x , Bx ⟩}
+         ; from = λ{ f ⟨ x , Bx ⟩ → f x Bx}
+         ; from∘to = extensionality λ{ ⟨ x , Bx ⟩ → refl}
+         ; to∘from = refl
+         }
+
+∃¬-implies-¬∀ : ∀{A : Set} {B : A → Set}
+              → Σ[ x ∈ A ] (¬ B x)
+              → ¬ (∀(x : A) → B x)
+∃¬-implies-¬∀ ⟨ x , ¬Bx ⟩ f = ¬Bx (f x)
