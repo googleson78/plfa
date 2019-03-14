@@ -3,7 +3,8 @@ module plfa.Quantifiers where
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; sym; trans; cong)
 open Eq.≡-Reasoning
-open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
+open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _≤_; z≤n; s≤s)
+open import Data.Nat.Properties using (+-comm)
 open import Data.Nat.Properties.Simple using (+-suc)
 open import Relation.Nullary using (¬_)
 open import Function using (_∘_; id)
@@ -88,3 +89,48 @@ syntax ∃-syntax (λ x → B) = ∃[ x ] B
 -- the converse is not true in general;
 -- you have no way of knowing whether the x for which B x
 -- is the same x for which C x
+
+data even : ℕ → Set
+data odd  : ℕ → Set
+
+data even where
+  even-zero : even zero
+  even-suc : ∀ {n : ℕ} → odd n → even (suc n)
+
+data odd where
+  odd-suc : ∀ {n : ℕ} → even n → odd (suc n)
+
+even-∃ : ∀{n : ℕ} → even n → ∃[ m ] (    m * 2 ≡ n)
+odd-∃  : ∀{n : ℕ} → odd n  → ∃[ m ] (1 + m * 2 ≡ n)
+
+even-∃ even-zero = ⟨ 0 , refl ⟩
+even-∃ (even-suc ox)
+  with odd-∃ ox
+...  | ⟨ x/2 , refl ⟩ = ⟨ suc x/2 , refl ⟩
+odd-∃ (odd-suc ex)
+  with even-∃ ex
+...  | ⟨ x/2 , refl ⟩ = ⟨ x/2 , refl ⟩
+
+∃-even : ∀{n : ℕ} → ∃[ m ] (    m * 2 ≡ n) → even n
+∃-odd  : ∀{n : ℕ} → ∃[ m ] (1 + m * 2 ≡ n) → odd n
+
+∃-even ⟨ zero , refl ⟩ = even-zero
+∃-even ⟨ suc x , refl ⟩ = even-suc (∃-odd ⟨ x , refl ⟩)
+∃-odd ⟨ x , refl ⟩ = odd-suc (∃-even ⟨ x , refl ⟩)
+
+even-∃' : ∀{n : ℕ} → even n → ∃[ m ] (    2 * m ≡ n)
+odd-∃'  : ∀{n : ℕ} → odd n  → ∃[ m ] (1 + 2 * m ≡ n)
+
+even-∃' even-zero = ⟨ zero , refl ⟩
+even-∃' (even-suc ox)
+  with odd-∃' ox
+...  | ⟨ x , refl ⟩ = ⟨ suc x , cong suc (+-suc x (x + zero)) ⟩
+odd-∃' (odd-suc ex)
+  with even-∃' ex
+...  | ⟨ x , refl ⟩ = ⟨ x , refl ⟩
+
+∃-+-≤ : ∀(n m : ℕ) → n ≤ m → ∃[ k ] (k + n ≡ m)
+∃-+-≤ n m z≤n = ⟨ m , +-comm m zero ⟩
+∃-+-≤ (suc n) (suc m) (s≤s n≤m)
+  with ∃-+-≤ n m n≤m
+...  | ⟨ k , refl ⟩ = ⟨ k , +-suc k n ⟩
