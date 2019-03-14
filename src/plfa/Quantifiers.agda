@@ -13,13 +13,14 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import plfa.Isomorphism using (_≃_; ≃-sym; ≃-trans; _≼_; extensionality)
 
 open import plfa.Negation using (⊎-elim)
+open import plfa.Induction using (Bin; to; from; fromToIsId)
+open import plfa.Relations using (Can; to-from-id-can; to-can)
 
 ∀-elim : ∀{A : Set} {B : A → Set}
        → (L : ∀(x : A) → B x)
        → (M : A)
        → (B M)
 ∀-elim = id
-
 
 ∀-distrib-× : ∀{A : Set} {B C : A → Set}
             → (∀(x : A) → B x × C x) ≃ (∀(x : A) → B x) × (∀(x : A) → C x)
@@ -148,3 +149,12 @@ odd-∃' (odd-suc ex)
               → Σ[ x ∈ A ] (¬ B x)
               → ¬ (∀(x : A) → B x)
 ∃¬-implies-¬∀ ⟨ x , ¬Bx ⟩ f = ¬Bx (f x)
+
+
+ℕ≃∃Can : ℕ ≃ Σ[ x ∈ Bin ] (Can x)
+ℕ≃∃Can =
+  record { to = λ n → ⟨ to n , to-can n ⟩
+         ; from = λ{ ⟨ x , _ ⟩ → from x}
+         ; from∘to = fromToIsId
+         ; to∘from = λ{ {⟨ x , Canx ⟩} → ?}
+         }
