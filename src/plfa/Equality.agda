@@ -128,15 +128,19 @@ open ≤-Reasoning
     suc n + k
   qed
 
+≡-implies-≤ : ∀{n m : ℕ} → n ≡ m → n ≤ m
+≡-implies-≤ {zero} {.zero} refl = z≤n
+≡-implies-≤ {suc n} {.(suc n)} refl = s≤s (≡-implies-≤ refl)
+
 +-mono-left-≤ : ∀ (n m k : ℕ) → m ≤ k → m + n ≤ k + n
 +-mono-left-≤ n m k m≤k =
   ≤-begin
     m + n
-  ≤⟨ subst (+-comm m n) ≤-refl ⟩
+  ≤⟨ ≡-implies-≤ (+-comm m n) ⟩
     n + m
   ≤⟨ +-mono-right-≤ n m k m≤k ⟩
     n + k
-  ≤⟨ subst (+-comm n k) ≤-refl ⟩
+  ≤⟨ ≡-implies-≤ (+-comm n k) ⟩
     k + n
   qed
 
