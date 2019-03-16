@@ -6,6 +6,7 @@ This requires the `Agda` [standard-library](https://github.com/agda/agda-stdlib)
 
 Some things are different due to either preference or what unicode I have "easily available" (due to using [agda-vim](https://github.com/derekelkins/agda-vim)).
 
+* Various {sub,super}scripts are renamed, for ease of typing.
 * `_≲_` from `plfa.Isomorphism` is `_≼_` instead (easier to type, already accessible from `agda-vim` )
 * `to∘from` and `from∘to` from `_≃_` have an implicit instead of explicit argument, it seems more natural
 * `⊥-elim` from `plfa.Connectives` is `efq` because it's semantically more meaningful
