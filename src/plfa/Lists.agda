@@ -11,7 +11,7 @@ open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_⟩)
 open import Function using (_∘_)
 open import Level using (Level)
-open import plfa.Isomorphism using (_≃_; _⇔_)
+open import plfa.Isomorphism using (_≃_; _⇔_; extensionality)
 
 
 data List (A : Set) : Set where
@@ -85,4 +85,88 @@ reverse-involutive (x ∷ xs) =
     x ∷ reverse (reverse xs)
   ≡⟨ cong (x ∷_) (reverse-involutive xs) ⟩
     x ∷ xs
+  ∎
+
+shunt : ∀{A : Set} → List A → List A → List A
+shunt [] ys = ys
+shunt (x ∷ xs) ys = shunt xs (x ∷ ys)
+
+shunt-reverse : ∀{A : Set} → (xs ys : List A) → shunt xs ys ≡ reverse xs ++ ys
+shunt-reverse [] ys = refl
+shunt-reverse (x ∷ xs) ys =
+  begin
+    shunt (x ∷ xs) ys
+  ≡⟨⟩
+    shunt xs (x ∷ ys)
+  ≡⟨ shunt-reverse xs (x ∷ ys) ⟩
+    reverse xs ++ x ∷ ys
+  ≡⟨⟩
+    reverse xs ++ [ x ] ++ ys
+  ≡⟨ sym (++-assoc (reverse xs) [ x ] ys) ⟩
+    (reverse xs ++ [ x ]) ++ ys
+  ≡⟨⟩
+    reverse (x ∷ xs) ++ ys
+  ∎
+
+fast-reverse : ∀{A : Set} → List A → List A
+fast-reverse xs = shunt xs []
+
+fast-reverse-is-reverse : ∀{A : Set} → (xs : List A) → fast-reverse xs ≡ reverse xs
+fast-reverse-is-reverse [] = refl
+fast-reverse-is-reverse (x ∷ xs) = shunt-reverse xs [ x ]
+
+map : ∀{A B : Set} → (A → B) → List A → List B
+map _ [] = []
+map f (x ∷ xs) = f x ∷ map f xs
+
+map-compose-pointful : ∀{A B C : Set}
+                        (f : A → B) (g : B → C)
+                        (xs : List A)
+                     → map (g ∘ f) xs ≡ (map g ∘ map f) xs
+map-compose-pointful f g [] = refl
+map-compose-pointful f g (x ∷ xs) =
+  begin
+    map (g ∘ f) (x ∷ xs)
+  ≡⟨⟩
+    (g ∘ f) x ∷ map (g ∘ f) xs
+  ≡⟨ cong ((g ∘ f) x ∷_) (map-compose-pointful f g xs) ⟩
+    (g ∘ f) x ∷ (map g ∘ map f) xs
+  ≡⟨⟩
+    g (f x) ∷ map g (map f xs)
+  ≡⟨⟩
+    map g (f x ∷ map f xs)
+  ≡⟨⟩
+    map g (map f (x ∷ xs))
+  ≡⟨⟩
+    (map g ∘ map f) (x ∷ xs)
+  ∎
+
+map-compose : ∀{A B C : Set}
+               {f : A → B} {g : B → C}
+            → map (g ∘ f) ≡ map g ∘ map f
+map-compose {_} {_} {_} {f} {g} =
+  begin
+    map (g ∘ f)
+  ≡⟨⟩
+    map (λ x → g (f x))
+  ≡⟨ extensionality (map-compose-pointful f g) ⟩
+    (λ xs → map g (map f xs))
+  ≡⟨⟩
+    (map g) ∘ (map f)
+  ∎
+
+map-homomorphic-++ : ∀{A B : Set} (f : A → B) (xs ys : List A)
+                    → map f (xs ++ ys) ≡ map f xs ++ map f ys
+map-homomorphic-++ f [] ys = refl
+map-homomorphic-++ f (x ∷ xs) ys =
+  begin
+    map f (x ∷ xs ++ ys)
+  ≡⟨⟩
+    f x ∷ map f (xs ++ ys)
+  ≡⟨ cong (f x ∷_) (map-homomorphic-++ f xs ys) ⟩
+    f x ∷ map f xs ++ map f ys
+  ≡⟨⟩
+    (f x ∷ map f xs) ++ map f ys
+  ≡⟨⟩
+    map f (x ∷ xs) ++ map f ys
   ∎

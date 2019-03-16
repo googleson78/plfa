@@ -12,3 +12,4 @@ Some things are different due to either preference or what unicode I have "easil
 * `⊥-elim` from `plfa.Connectives` is `efq` because it's semantically more meaningful
 * `em` from `plfa.Negation` is `lem` because I'm used to that name more
 * `iff` from `plfa.Decidable` is `_⇔b_`; `iff-⇔` is `⇔b-⇔`
+* `map-++-commute` from `plfa.Lists` is `map-homomorphic-++`
