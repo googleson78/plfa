@@ -170,3 +170,89 @@ map-homomorphic-++ f (x ∷ xs) ys =
   ≡⟨⟩
     map f (x ∷ xs) ++ map f ys
   ∎
+
+data Tree (A B : Set) : Set where
+  leaf : A → Tree A B
+  node : Tree A B → B → Tree A B → Tree A B
+
+map-tree : ∀{A B C D : Set}
+         → (A → C) → (B → D)
+         → Tree A B → Tree C D
+map-tree f _ (leaf x) = leaf (f x)
+map-tree f g (node l x r) = node (map-tree f g l) (g x) (map-tree f g r)
+
+foldr : ∀{A B : Set} → (A → B → B) → B → List A → B
+foldr _ v [] = v
+foldr f v (x ∷ xs) = f x (foldr f v xs)
+
+product : List ℕ → ℕ
+product = foldr (_*_) 1
+
+foldr-++ : ∀{A B : Set}
+            (f : A → B → B) (v : B) (xs ys : List A)
+         → foldr f (foldr f v ys) xs ≡ foldr f v (xs ++ ys)
+foldr-++ f v [] ys = refl
+foldr-++ f v (x ∷ xs) ys =
+  begin
+    foldr f (foldr f v ys) (x ∷ xs)
+  ≡⟨⟩
+    f x (foldr f (foldr f v ys) xs)
+  ≡⟨ cong (f x) (foldr-++ f v xs ys) ⟩
+    f x (foldr f v (xs ++ ys))
+  ≡⟨⟩
+    foldr f v (x ∷ xs ++ ys)
+  ≡⟨⟩
+    foldr f v ((x ∷ xs) ++ ys)
+  ∎
+
+map-is-foldr-pointful : ∀{A B : Set} {f : A → B} (xs : List A) → map f xs ≡ foldr (_∷_ ∘ f) [] xs
+map-is-foldr-pointful {_} {_} {f} [] = refl
+map-is-foldr-pointful {_} {_} {f} (x ∷ xs) =
+  begin
+    map f (x ∷ xs)
+  ≡⟨⟩
+    f x ∷ map f xs
+  ≡⟨ cong (f x ∷_) (map-is-foldr-pointful xs) ⟩
+    f x ∷ foldr (_∷_ ∘ f) [] xs
+  ≡⟨⟩
+    _∷_ (f x) (foldr (_∷_ ∘ f) [] xs)
+  ≡⟨⟩
+    (_∷_ (f x)) (foldr (_∷_ ∘ f) [] xs)
+  ≡⟨⟩
+    ((_∷_ ∘ f) x) (foldr (_∷_ ∘ f) [] xs)
+  ≡⟨⟩
+    (_∷_ ∘ f) x (foldr (_∷_ ∘ f) [] xs)
+  ≡⟨⟩
+    foldr (_∷_ ∘ f) [] (x ∷ xs)
+  ∎
+
+map-is-foldr : ∀{A B : Set} {f : A → B} → map f ≡ foldr (_∷_ ∘ f) []
+map-is-foldr = extensionality map-is-foldr-pointful
+
+fold-tree : ∀ {A B C : Set}
+          → (A → C) → (C → B → C → C) → Tree A B → C
+fold-tree f _ (leaf x) = f x
+fold-tree f g (node l x r) = g (fold-tree f g l) x (fold-tree f g r)
+
+map-tree-is-fold-tree : ∀{A B C D : Set}
+                      → (f : A → C) → (g : B → D)
+                      → (t : Tree A B)
+                      → map-tree f g t ≡ fold-tree (leaf ∘ f) (λ l x r → node l (g x) r) t
+map-tree-is-fold-tree f g (leaf x) = refl
+map-tree-is-fold-tree {A} {B} {C} {D} f g (node l x r) =
+  begin
+    map-tree f g (node l x r)
+  ≡⟨⟩
+    node (map-tree f g l) (g x) (map-tree f g r)
+  ≡⟨ cong (λ l' → node l' (g x) (map-tree f g r)) (map-tree-is-fold-tree f g l) ⟩
+    node (fold-tree f' g' l) (g x) (map-tree f g r)
+  ≡⟨ cong (λ r' → node (fold-tree f' g' l) (g x) r') (map-tree-is-fold-tree f g r) ⟩
+    node (fold-tree f' g' l) (g x) (fold-tree f' g' r)
+  ≡⟨⟩
+    fold-tree f' g' (node l x r)
+  ∎
+    where
+      f' : ∀{D' : Set} → A → Tree C D'
+      f' = leaf ∘ f
+      g' : ∀{C' : Set} → Tree C' D → B → Tree C' D → Tree C' D
+      g'  l x r = node l (g x) r
