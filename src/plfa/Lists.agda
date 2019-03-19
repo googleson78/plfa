@@ -6,7 +6,8 @@ open Eq.≡-Reasoning
 open import Data.Bool using (Bool; true; false; T; _∧_; _∨_; not)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_; _≤_; s≤s; z≤n)
 open import Data.Nat.Properties using
-  (+-assoc; +-identityˡ; +-identityʳ; *-assoc; *-identityˡ; *-identityʳ)
+  (+-assoc; +-identityˡ; +-identityʳ;
+   *-assoc; *-comm; *-distribˡ-+; *-distribʳ-+; *-identityˡ; *-identityʳ)
 open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_⟩)
 open import Function using (_∘_)
@@ -185,6 +186,9 @@ foldr : ∀{A B : Set} → (A → B → B) → B → List A → B
 foldr _ v [] = v
 foldr f v (x ∷ xs) = f x (foldr f v xs)
 
+sum : List ℕ → ℕ
+sum = foldr (_+_) 0
+
 product : List ℕ → ℕ
 product = foldr (_*_) 1
 
@@ -256,3 +260,37 @@ map-tree-is-fold-tree {A} {B} {C} {D} f g (node l x r) =
       f' = leaf ∘ f
       g' : ∀{C' : Set} → Tree C' D → B → Tree C' D → Tree C' D
       g'  l x r = node l (g x) r
+
+downFrom : ℕ → List ℕ
+downFrom zero = []
+downFrom (suc n) = n ∷ downFrom n
+
+sum-downFrom : ∀(n : ℕ) → sum (downFrom n) * 2 ≡ n * (n ∸ 1)
+sum-downFrom zero = refl
+sum-downFrom (suc zero) = refl
+sum-downFrom (suc (suc n)) = let n' = suc n in
+  begin
+    sum (downFrom (suc n')) * 2
+  ≡⟨⟩
+    sum (n' ∷ downFrom n') * 2
+  ≡⟨⟩
+    (n' + sum (downFrom n')) * 2
+  ≡⟨ *-distribʳ-+ 2 n' (sum (downFrom n')) ⟩
+    n' * 2 + sum (downFrom n') * 2
+  ≡⟨ cong ((n' * 2) +_) (sum-downFrom n') ⟩
+    n' * 2 + n' * (n' ∸ 1)
+  ≡⟨ sym (*-distribˡ-+ n' 2 (n' ∸ 1)) ⟩
+    n' * (2 + (n' ∸ 1))
+  ≡⟨⟩
+    n' * (2 + (suc n ∸ 1)) -- we use n' ≥ 1 here
+  ≡⟨⟩
+    n' * (2 + n)
+  ≡⟨⟩
+    n' * (suc (suc n))
+  ≡⟨⟩
+  n' * (suc n')
+  ≡⟨ *-comm n' (suc n') ⟩
+    suc n' * n'
+  ≡⟨⟩
+    suc n' * (suc n' ∸ 1)
+  ∎
