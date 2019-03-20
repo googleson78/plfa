@@ -40,6 +40,9 @@ _++_ : ∀{A : Set} → List A → List A → List A
 ++-assoc [] ys zs = refl
 ++-assoc (x ∷ xs) ys zs = cong (x ∷_) (++-assoc xs ys zs)
 
+++-identity-left : ∀{A : Set} → {xs : List A} → [] ++ xs ≡ xs
+++-identity-left = refl
+
 ++-identity-right : ∀{A : Set} → {xs : List A} → xs ++ [] ≡ xs
 ++-identity-right {_} {[]} = refl
 ++-identity-right {_} {x ∷ xs} = cong (x ∷_) ++-identity-right
@@ -293,4 +296,94 @@ sum-downFrom (suc (suc n)) = let n' = suc n in
     suc n' * n'
   ≡⟨⟩
     suc n' * (suc n' ∸ 1)
+  ∎
+
+record IsMonoid {A : Set} (_⊗_ : A → A → A) (e : A) : Set where
+  field
+    assoc : ∀(x y z : A) → (x ⊗ y) ⊗ z ≡ x ⊗ (y ⊗ z)
+    left-identity : ∀(x : A) → e ⊗ x ≡ x
+    right-identity : ∀(x : A) → x ⊗ e ≡ x
+
+open IsMonoid
+
++-monoid : IsMonoid _+_ 0
++-monoid =
+  record { assoc = +-assoc
+         ; left-identity = +-identityˡ
+         ; right-identity = +-identityʳ
+         }
+
+*-monoid : IsMonoid _*_ 1
+*-monoid =
+  record
+    { assoc = *-assoc
+    ; left-identity = *-identityˡ
+    ; right-identity = *-identityʳ
+    }
+
+++-monoid : ∀{A : Set} → IsMonoid {List A} _++_ []
+++-monoid {A} =
+  record
+    { assoc = ++-assoc
+    ; left-identity = λ x → ++-identity-left {A} {x}
+    ; right-identity = λ x → ++-identity-right {A} {x}
+    }
+
+foldr-monoid : ∀{A : Set} (_⊗_ : A → A → A) (e : A) → IsMonoid {A} _⊗_ e
+             → (xs : List A) → (v : A)
+             → foldr _⊗_ v xs ≡ foldr _⊗_ e xs ⊗ v
+foldr-monoid _⊗_ e ⊗-monoid [] v = sym (left-identity ⊗-monoid v)
+foldr-monoid _⊗_ e ⊗-monoid (x ∷ xs) v =
+  begin
+    x ⊗ foldr _⊗_ v xs
+  ≡⟨ cong (x ⊗_) (foldr-monoid _⊗_ e ⊗-monoid xs v) ⟩
+    x ⊗ (foldr _⊗_ e xs ⊗ v)
+  ≡⟨ sym (assoc ⊗-monoid x (foldr _⊗_ e xs) v) ⟩
+    (x ⊗ foldr _⊗_ e xs) ⊗ v
+  ≡⟨⟩
+    foldr _⊗_ e (x ∷ xs) ⊗ v
+  ∎
+
+foldl : ∀{A B : Set} → (B → A → B) → B → List A → B
+foldl _ v [] = v
+foldl f v (x ∷ xs) = foldl f (f v x) xs
+
+foldl-monoid-out : ∀{A : Set}
+                 → (_⊗_ : A → A → A) → (e : A) → IsMonoid {A} _⊗_ e
+                 → (xs : List A) (v : A)
+                 → foldl _⊗_ v xs ≡ v ⊗ foldl _⊗_ e xs
+foldl-monoid-out _⊗_ e ⊗-monoid [] v = sym (right-identity ⊗-monoid v)
+foldl-monoid-out _⊗_ e ⊗-monoid (x ∷ xs) v =
+  begin
+    foldl _⊗_ v (x ∷ xs)
+  ≡⟨⟩
+    foldl _⊗_ (v ⊗ x) xs
+  ≡⟨ foldl-monoid-out _⊗_ e ⊗-monoid xs (v ⊗ x) ⟩
+    (v ⊗ x) ⊗ foldl _⊗_ e xs
+  ≡⟨ assoc ⊗-monoid v x (foldl _⊗_ e xs) ⟩
+    v ⊗ (x ⊗ foldl _⊗_ e xs)
+  ≡⟨ cong (v ⊗_) (sym (foldl-monoid-out _⊗_ e ⊗-monoid xs x)) ⟩
+    v ⊗ foldl _⊗_ x xs
+  ≡⟨ cong (v ⊗_) (cong (λ y → foldl _⊗_ y xs) (sym (left-identity ⊗-monoid x))) ⟩
+    v ⊗ foldl _⊗_ (e ⊗ x) xs
+  ≡⟨⟩
+    v ⊗ foldl _⊗_ e (x ∷ xs)
+  ∎
+
+foldr-monoid-foldl : ∀{A : Set}
+                   → (_⊗_ : A → A → A) → (e : A) → IsMonoid {A} _⊗_ e
+                   → (xs : List A)
+                   → foldr _⊗_ e xs ≡ foldl _⊗_ e xs
+foldr-monoid-foldl _⊗_ e ⊗-monoid [] = refl
+foldr-monoid-foldl _⊗_ e ⊗-monoid (x ∷ xs) =
+  begin
+    x ⊗ foldr _⊗_ e xs
+  ≡⟨ cong (x ⊗_) (foldr-monoid-foldl _⊗_ e ⊗-monoid xs) ⟩
+    x ⊗ foldl _⊗_ e xs
+  ≡⟨ sym (foldl-monoid-out _⊗_ e ⊗-monoid xs x)  ⟩
+    foldl _⊗_ x xs
+  ≡⟨ sym (cong (λ y → foldl _⊗_ y xs) (left-identity ⊗-monoid x)) ⟩
+    foldl _⊗_ (e ⊗ x) xs
+  ≡⟨⟩
+    foldl _⊗_ e (x ∷ xs)
   ∎
