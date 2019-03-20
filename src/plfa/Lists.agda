@@ -11,6 +11,7 @@ open import Data.Nat.Properties using
 open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_⟩)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.Empty using (⊥-elim)
 open import Function using (_∘_)
 open import Level using (Level)
 open import plfa.Isomorphism using (_≃_; _⇔_; extensionality)
@@ -430,10 +431,10 @@ Any-++-⇔ {A} {P} xs ys =
 
 infix 4 _∈_ _∉_
 
-_∈_ : ∀ {A : Set} (x : A) (xs : List A) → Set
+_∈_ : ∀{A : Set} (x : A) (xs : List A) → Set
 x ∈ xs = Any (x ≡_) xs
 
-_∉_ : ∀ {A : Set} (x : A) (xs : List A) → Set
+_∉_ : ∀{A : Set} (x : A) (xs : List A) → Set
 x ∉ xs = ¬ (x ∈ xs)
 
 ∈-++-⇔ : ∀{A : Set} (xs ys : List A) (x : A)
@@ -465,3 +466,43 @@ All-++-≃ {A} {P} xs ys =
     to∘from : (xs ys : List A) (Pxs×Pys : All P xs × All P ys) → to xs ys (from xs ys Pxs×Pys) ≡ Pxs×Pys
     to∘from [] ys ⟨ [] , Pys ⟩ = refl
     to∘from (x ∷ xs) ys ⟨ Px ∷ Pxs , Pys ⟩ = cong (λ{ ⟨ Pxs' , snd ⟩ → ⟨ Px ∷ Pxs' , snd ⟩}) (to∘from xs ys ⟨ Pxs , Pys ⟩)
+
+_∘′_ : ∀{ℓ₁ ℓ₂ ℓ₃ : Level} {A : Set ℓ₁} {B : Set ℓ₂} {C : Set ℓ₃}
+     → (B → C) → (A → B) → A → C
+(g ∘′ f) x  =  g (f x)
+
+¬Any≃All¬ : ∀{A : Set} {P : A → Set}
+          → (xs : List A)
+          → ¬ Any P xs ≃ All (¬_ ∘′ P) xs
+¬Any≃All¬ {A} {P} xs =
+  record { to = to xs
+         ; from = from xs
+         ; from∘to = from∘to xs
+         ; to∘from = to∘from xs
+         }
+  where
+    to : (xs : List A) → ¬ Any P xs → All (¬_ ∘′ P) xs
+    to [] ¬AnyPxs = []
+    to (x ∷ xs) ¬AnyPxs = (λ Px → ¬AnyPxs (here Px)) ∷ to xs λ AnyPxs → ¬AnyPxs (there AnyPxs)
+    from : (xs : List A) → All (¬_ ∘′ P) xs → ¬ Any P xs
+    from [] All¬Pxs ()
+    from (x ∷ _) (¬Px ∷ _) (here Px) = ¬Px Px
+    from (x ∷ xs) (¬Px ∷ All¬Pxs) (there AnyPxs) = from xs All¬Pxs AnyPxs
+    from∘to : (xs : List A) → {¬AnyPxs : ¬ Any P xs} → from xs (to xs ¬AnyPxs) ≡ ¬AnyPxs
+    from∘to [] {¬AnyPxs} = extensionality λ()
+    from∘to (x ∷ xs) {¬AnyPxs} = extensionality
+      λ{ (here Px) → refl
+       ; (there AnyPxs) → ⊥-elim (¬AnyPxs (there AnyPxs))
+       }
+    to∘from : (xs : List A) → {All¬Pxs : All (¬_ ∘′ P) xs} → to xs (from xs All¬Pxs) ≡ All¬Pxs
+    to∘from [] {[]} = refl
+    to∘from (x ∷ xs) {¬Px ∷ All¬Pxs} = cong (¬Px ∷_) (to∘from xs)
+
+-- ¬All≃Any¬ requires non-constructive reasoning, however
+-- we can go from Any¬ to ¬All
+Any¬-implies-¬All : ∀{A : Set} {P : A → Set}
+                  → (xs : List A)
+                  → Any (¬_ ∘′ P) xs → ¬ All P xs
+Any¬-implies-¬All [] () AllPxs
+Any¬-implies-¬All (x ∷ _) (here ¬Px) (Px ∷ _) = ¬Px Px
+Any¬-implies-¬All (x ∷ xs) (there Any¬Pxs) (Px ∷ AllPxs) = Any¬-implies-¬All xs Any¬Pxs AllPxs
