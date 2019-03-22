@@ -506,3 +506,40 @@ Any¬-implies-¬All : ∀{A : Set} {P : A → Set}
 Any¬-implies-¬All [] () AllPxs
 Any¬-implies-¬All (x ∷ _) (here ¬Px) (Px ∷ _) = ¬Px Px
 Any¬-implies-¬All (x ∷ xs) (there Any¬Pxs) (Px ∷ AllPxs) = Any¬-implies-¬All xs Any¬Pxs AllPxs
+
+all : ∀{A : Set} → (P : A → Bool) → List A → Bool
+all p = foldr _∧_ true ∘ map p
+
+Decidable : ∀{A : Set} → (A → Set) → Set
+Decidable {A} P  =  ∀(x : A) → Dec (P x)
+
+All? : ∀{A : Set} {P : A → Set} → Decidable P → Decidable (All P)
+All? P [] = yes []
+All? P (x ∷ xs)
+  with P x | All? P xs
+...  | no ¬px | _       = no λ{ (px ∷ _) → ¬px px}
+...  | _      | no ¬pxs = no λ{ (_ ∷ pxs) → ¬pxs pxs}
+...  | yes px | yes pxs = yes (px ∷ pxs)
+
+
+any : ∀{A : Set} → (P : A → Bool) → List A → Bool
+any p = foldr _∨_ false ∘ map p
+
+Any? : ∀{A : Set} {P : A → Set} → Decidable P → Decidable (Any P)
+Any? P [] = no λ()
+Any? P (x ∷ xs)
+  with P x | Any? P xs
+...  | no ¬px | no ¬pxs = no λ{ (here px) → ¬px px
+                              ; (there pxs) → ¬pxs pxs
+                              }
+...  | yes px | _       = yes (here px)
+...  | _      | yes pxs = yes (there pxs)
+
+filter? : ∀{A : Set} {P : A → Set}
+        → (P? : Decidable P) → List A
+        → ∃[ ys ] (All P ys)
+filter? p? [] = ⟨ [] , [] ⟩
+filter? p? (x ∷ xs)
+  with p? x | filter? p? xs
+...  | yes px | ⟨ ys , pys ⟩ = ⟨ x ∷ ys , px ∷ pys ⟩
+...  | no ¬px | pxs = pxs
