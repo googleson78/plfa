@@ -14,3 +14,4 @@ Some things are different due to either preference or what unicode I have "easil
 * `iff` from `plfa.Decidable` is `_⇔b_`; `iff-⇔` is `⇔b-⇔`
 * `map-++-commute` from `plfa.Lists` is `map-homomorphic-++`
 * `identity-ˡ` from `plfa.Lists.IsMonoid` is `left-identity`. Same for the right identity.
+* where `\`` is used I use `‵` instead. This is because my ``` is my "leader" key (I use it for the other unicode stuff)
