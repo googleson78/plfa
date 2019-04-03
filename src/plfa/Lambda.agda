@@ -64,3 +64,54 @@ mult = μ "*" ⇒ ƛ "n" ⇒ ƛ "m" ⇒
 multᶜ : Term
 multᶜ = ƛ "n" ⇒ ƛ "m" ⇒
   ƛ "s" ⇒ ƛ "z" ⇒ ‵ "n" · (plusᶜ · ‵ "m") · (ƛ "s" ⇒ ƛ "z" ⇒ ‵ "z")
+
+data Value : Term → Set where
+  V-ƛ : ∀{x : Id} {N : Term} → Value (ƛ x ⇒ N)
+  V-zero : Value ‵zero
+  V-suc : ∀{V : Term} → Value V → Value (‵suc V)
+
+infix 9 _[_:=_]
+_[_:=_] : Term → Id → Term → Term
+(‵ x) [ y := K ]
+  with x ≟ y
+...  | yes _ = K
+...  | no  _ = ‵ x
+(ƛ x ⇒ N) [ y := K ]
+  with x ≟ y
+...  | yes _ = ƛ x ⇒ N
+...  | no  _ = ƛ x ⇒ N [ y := K ]
+(N · M) [ y := K ] = N [ y := K ] · M [ y := K ]
+‵zero [ y := K ] = ‵zero
+(‵suc N) [ y := K ] = ‵suc N [ y := K ]
+case N [zero⇒ M |suc n ⇒ K ] [ y := P ]
+  with n ≟ y
+...  | yes _ = case N [ y := P ] [zero⇒ M [ y := P ] |suc n ⇒ K ]
+...  | no  _ = case N [ y := P ] [zero⇒ M [ y := P ] |suc n ⇒ K [ y := P ] ]
+
+(μ x ⇒ N) [ y := K ]
+  with x ≟ y
+...  | yes _ = μ x ⇒ N
+...  | no  _ = μ x ⇒ N [ y := K ]
+
+infix 9 _[_:=_]'
+_[_:=_]' : Term → Id → Term → Term
+boundSubst : Id → Term → Id → Term → Term
+
+(‵ x) [ y := K ]'
+  with x ≟ y
+...  | yes _ = K
+...  | no  _ = ‵ x
+(ƛ x ⇒ N) [ y := K ]' = ƛ x ⇒ boundSubst x N y K
+(N · M) [ y := K ]' = N [ y := K ]' · M [ y := K ]'
+‵zero [ y := K ]' = ‵zero
+(‵suc N) [ y := K ]' = ‵suc N [ y := K ]'
+case N [zero⇒ M |suc n ⇒ K ] [ y := P ]'
+  = case N [ y := P ]' [zero⇒ M [ y := P ]'
+                       |suc n ⇒ boundSubst n K y P
+                       ]
+(μ x ⇒ N) [ y := K ]' = μ x ⇒ boundSubst x N y K
+
+boundSubst x N y K
+  with x ≟ y
+...  | yes _ = N
+...  | no  _ = N [ y := K ]'
