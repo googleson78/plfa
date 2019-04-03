@@ -63,4 +63,4 @@ mult = μ "*" ⇒ ƛ "n" ⇒ ƛ "m" ⇒
 -- TODO: check
 multᶜ : Term
 multᶜ = ƛ "n" ⇒ ƛ "m" ⇒
-  ƛ "s" ⇒ ƛ "z" ⇒ ‵ "n" · (plusᶜ · ‵ "m") · ‵ "z"
+  ƛ "s" ⇒ ƛ "z" ⇒ ‵ "n" · (plusᶜ · ‵ "m") · (ƛ "s" ⇒ ƛ "z" ⇒ ‵ "z")
