@@ -115,3 +115,15 @@ boundSubst x N y K
   with x ≟ y
 ...  | yes _ = N
 ...  | no  _ = N [ y := K ]'
+
+infix 4 _—→_
+
+data _—→_ : Term → Term → Set where
+  ξ-·₁   : ∀ {N N' M : Term} → N —→ N' → N · M —→ N' · M
+  ξ-·₂   : ∀ {V N N' : Term} → Value V → N —→ N' → V · N —→ V · N'
+  β-ƛ    : ∀ {x : Id} {N V : Term} → Value V → (ƛ x ⇒ N) · V —→ N [ x := V ]
+  ξ-suc  : ∀ {N N' : Term} → N —→ N' → ‵suc N —→ ‵suc N'
+  ξ-case : ∀ {n : Id} {N N' M K : Term} → N —→ N' → case N [zero⇒ M |suc n ⇒ K ] —→ case N' [zero⇒ M |suc n ⇒ K ]
+  β-zero : ∀ {n : Id} {N M : Term} → case ‵zero [zero⇒ N |suc n ⇒ M ] —→ N
+  β-suc  : ∀ {n : Id} {N M K : Term} → case ‵suc N [zero⇒ N |suc n ⇒ K ] —→ K [ n := N ]
+  β-μ    : ∀ {x : Id} {N : Term} → μ x ⇒ N —→ N [ x := μ x ⇒ N ]
